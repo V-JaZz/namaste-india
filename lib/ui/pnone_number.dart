@@ -1,9 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
-import 'package:namastey_india/constant/common.dart';
 import 'package:namastey_india/ui/phone_otp.dart';
-import 'package:namastey_india/ui/share_location.dart';
 
 import '../constant/colors.dart';
 import '../main.dart';
@@ -51,8 +50,7 @@ class _MyPhonePageState extends State<MyPhonePage> {
                         style: TextStyle(
                             color: Colors.black,
                             fontSize: 19,
-                            fontFamily: fontBold,
-                            fontWeight: FontWeight.bold),
+                            fontWeight: FontWeight.w700),
                       ),
                     )),
                 const SizedBox(
@@ -112,7 +110,7 @@ class _MyPhonePageState extends State<MyPhonePage> {
                               ),
                             ),
                             onSaved: (PhoneNumber number) {
-                              print("LenghtNumber " + number.phoneNumber!.length.toString());
+                              print("LenghtNumber ${number.phoneNumber!.length}");
                               if (number.phoneNumber!.length == 13) {
                                 print(' Saved Phone: $number');
                                 sentStatus(number.phoneNumber.toString());
@@ -160,16 +158,16 @@ class _MyPhonePageState extends State<MyPhonePage> {
                                 width: double.infinity,
                                 height: 50,
                                 margin: const EdgeInsets.all(15),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(4),
+                                  color: colorOrange,
+                                ),
                                 child: Center(
                                   child: Text(
                                     buttonText,
                                     style: const TextStyle(
                                         color: Colors.white, fontSize: 18),
                                   ),
-                                ),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(4),
-                                  color: colorOrange,
                                 ),
                               ),
                             ),
@@ -183,36 +181,39 @@ class _MyPhonePageState extends State<MyPhonePage> {
             )),
         Flexible(
             flex: 1,
-            child: Column(
-              children: [
-                Container(
-                  height: 1,
-                  color: const Color(0xFFE4E4E4),
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                GestureDetector(
-                    onTap: () {
-                      Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder:(context) => HomePage()),
-                              (route) => false);
-                    },
-                    child: const Padding(
-                        padding: EdgeInsets.only(left: 20),
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Or continue browsing as Guest",
-                            style: TextStyle(
-                              color: Color(0xAAF86600),
-                              fontSize: 14,
-                              decoration: TextDecoration.underline,
-                            ),
+            child: GestureDetector(
+              onTap: () {
+                Get.offAll(
+                        () => const HomePage(), //next page class
+                    duration: const Duration(milliseconds: 1000),
+                    curve: Curves.decelerate,
+                    transition: Transition.size //transition effect
+                );
+              },
+              child: Column(
+                children: [
+                  Container(
+                    height: 1,
+                    color: const Color(0xFFE4E4E4),
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  const Padding(
+                      padding: EdgeInsets.only(left: 20),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "Or continue browsing as Guest",
+                          style: TextStyle(
+                            color: Color(0xAAF86600),
+                            fontSize: 14,
+                            decoration: TextDecoration.underline,
                           ),
-                        ))),
-              ],
+                        ),
+                      )),
+                ],
+              ),
             ))
       ],
     ));
@@ -221,12 +222,13 @@ class _MyPhonePageState extends State<MyPhonePage> {
   void sentStatus(String number) async {
     bool? sentStatus = await _SendOtpRepository.login(number);
     if(sentStatus==true){
+      Get.to(
+              () => OtpScreen(phone: number), //next page class
+          duration: const Duration(milliseconds: 1000),
+          curve: Curves.decelerate,
+          transition: Transition.rightToLeft //transition effect
+      );
       setState(() {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => OtpScreen(phone: number),
-            ));
         buttonText = 'Continue';
       });
       print('otp sent!');

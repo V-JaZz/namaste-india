@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_onboard/flutter_onboard.dart';
+import 'package:get/get.dart';
 import 'package:namastey_india/constant/colors.dart';
-import 'package:namastey_india/main.dart';
-import 'package:namastey_india/tabs/tabspage.dart';
-import 'package:namastey_india/ui/globals.dart' as globals ;
 
 import 'notification_permission.dart';
-import 'pnone_number.dart';
 
 class IntroScreen extends StatelessWidget {
   final PageController _pageController = PageController();
@@ -48,7 +45,7 @@ class IntroScreen extends StatelessWidget {
           ),
           // Either Provide onSkip Callback or skipButton Widget to handle skip state
           skipButton:
-              Container() /*TextButton(
+          Container() /*TextButton(
             onPressed: () {
               // print('skipButton pressed');
             },
@@ -59,32 +56,28 @@ class IntroScreen extends StatelessWidget {
           )*/
           ,
           // Either Provide onDone Callback or nextButton Widget to handle done state
-          nextButton: OnBoardConsumer(
-            builder: (context, ref, child) {
-              final state = ref.watch(onBoardStateProvider);
-              return GestureDetector(
-                onTap: () {
-
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (_) => const NotificationPermission()),
-                    );
-                },
-                child: Container(
-                  width: double.infinity,
-                  height: 50,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(4), color: colorOrange),
-                  child: const Text(
-                    "Get Started" /*state.isLastPage ? "Done" : "Next"*/,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
+          nextButton: GestureDetector(
+            onTap: () {
+              Get.off(
+                      () => const NotificationPermission(), //next page class
+                  duration: const Duration(milliseconds: 800),
+                  transition: Transition.native //transition effect
               );
             },
+            child: Container(
+              width: double.infinity,
+              height: 50,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(4), color: colorOrange),
+              child: const Text(
+                "Get Started" /*state.isLastPage ? "Done" : "Next"*/,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           ),
         ),
       ),

@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:intl_phone_number_input/intl_phone_number_input.dart';
-import 'package:namastey_india/ui/notification_permission.dart';
+import 'package:get/get.dart';
 import 'package:namastey_india/ui/pnone_number.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../constant/colors.dart';
-import '../main.dart';
-import '../tabs/tabspage.dart';
 
 class ShareLocation extends StatefulWidget {
   @override
@@ -69,21 +66,23 @@ class _ShareLocationState extends State<ShareLocation> {
                     width: double.infinity,
                     height: 50,
                     margin: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(2),
+                        color: Colors.white),
                     child: const Center(
                         child: Text(
                           "Allow Location",
                           style: TextStyle(color: colorBlue, fontSize: 16,fontWeight: FontWeight.bold),
                         )),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(2),
-                        color: Colors.white),
                   ),
                 ),
                 GestureDetector(
                   onTap: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => MyPhonePage()),
+                    Get.off(
+                            () => MyPhonePage(), //next page class
+                        duration: const Duration(milliseconds: 1000),
+                        curve: Curves.decelerate,
+                        transition: Transition.rightToLeft //transition effect
                     );
                   },
                   child: const Padding(
@@ -113,16 +112,32 @@ class _ShareLocationState extends State<ShareLocation> {
       if (status.isGranted) {
         print('location permission granted');
 
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => MyPhonePage()),
+        Get.off(
+                () => MyPhonePage(), //next page class
+            duration: const Duration(milliseconds: 1000),
+            curve: Curves.decelerate,
+            transition: Transition.rightToLeft //transition effect
         );
 
       } else if (status.isDenied) {
         print('location permission denied');
         await [ Permission.location, ].request();
-        getLocationPermission(context);
+
+        for(int i=0; i<5; i++ ){
+
+        }
+
+        var status = await Permission.location.status;
+        if (status.isGranted) {
+          print('location permission granted');
+
+          Get.off(
+                  () => MyPhonePage(), //next page class
+              duration: const Duration(milliseconds: 1000),
+              curve: Curves.decelerate,
+              transition: Transition.rightToLeft //transition effect
+          );
+        }
 
       } else if (status.isPermanentlyDenied || status.isRestricted) {
         print('location permission permanently denied');
@@ -140,16 +155,16 @@ class _ShareLocationState extends State<ShareLocation> {
                 actions: [
                   ElevatedButton(onPressed: (){
                     Navigator.pop(context);
-                  }, child: const Text("Cancel",style: TextStyle(color: colorBlue),),
+                  },
                       style: const ButtonStyle(
                         backgroundColor: MaterialStatePropertyAll(Colors.white),
-                      )),
+                      ), child: const Text("Cancel",style: TextStyle(color: colorBlue),)),
                   ElevatedButton(onPressed: (){
                     openAppSettings();
-                  }, child: const Text("Open Settings"),
+                  },
                       style: const ButtonStyle(
                         backgroundColor: MaterialStatePropertyAll(colorOrange),
-                      )),
+                      ), child: const Text("Open Settings")),
                 ],
               );
             });
@@ -171,17 +186,17 @@ class _ShareLocationState extends State<ShareLocation> {
               actions: [
                 ElevatedButton(onPressed: (){
                   Navigator.pop(context);
-                }, child: const Text("Close",style: TextStyle(color: colorBlue),),
+                },
                     style: const ButtonStyle(
                       backgroundColor: MaterialStatePropertyAll(Colors.white),
-                    )),
+                    ), child: const Text("Close",style: TextStyle(color: colorBlue),)),
                 ElevatedButton(onPressed: (){
                   Navigator.pop(context);
                   getLocationPermission(context);
-                }, child: const Text("Retry"),
+                },
                     style: const ButtonStyle(
                       backgroundColor: MaterialStatePropertyAll(colorOrange),
-                    )),
+                    ), child: const Text("Retry")),
               ],
             );
           });

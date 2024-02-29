@@ -1,18 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:namastey_india/Provider/UserDataStateMgmt.dart';
-import 'package:namastey_india/ui/globals.dart';
-import 'package:provider/provider.dart';
 
 import '../constant/colors.dart';
-import '../models/userLoginDataModel.dart';
 import 'bottom_tabs.dart';
 
 class TabsPage extends StatefulWidget {
   int selectedIndex = 0;
-  UserData? userData;
 
-  TabsPage({Key? key, required this.selectedIndex, this.userData}) : super(key: key);
+  TabsPage({Key? key, required this.selectedIndex}) : super(key: key);
 
   @override
   _TabsPageState createState() => _TabsPageState();
@@ -35,7 +29,6 @@ class _TabsPageState extends State<TabsPage> {
     super.initState();
 
     Future.delayed(const Duration(seconds: 2), () {
-      loadUserData();
     });
   }
 
@@ -77,20 +70,5 @@ class _TabsPageState extends State<TabsPage> {
         showUnselectedLabels: true,
       ),
     );
-  }
-
-  Future<void> loadUserData() async {
-    print('started');
-    if(widget.userData != null){
-      final userDataState = Provider.of<UserDataStateMgmt>(context,listen: false);
-      try{
-        print('user data loaded');
-        userDataState.userData = widget.userData;
-        print(userDataState.userData!.contact.toString());
-        print(userDataState.userData!.isActive.toString());
-      }catch(e) {
-        print('user data not loaded $e');
-      }
-    }
   }
 }

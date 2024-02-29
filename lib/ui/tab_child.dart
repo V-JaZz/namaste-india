@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:namastey_india/constant/colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import '../Provider/CartDataStateMgmt.dart';
 import '../models/homeMenuModel.dart';
-import '../ui/globals.dart' as globals;
 
 class TabChild extends StatefulWidget {
   final int tabIndex;
@@ -18,45 +16,23 @@ class TabChild extends StatefulWidget {
 }
 
 class _SecondState extends State<TabChild> {
-  //parse double to de locale
-  static String deFormat(String val) {
-    // final deFormat = NumberFormat.decimalPattern('de',);
-    final deFormat = NumberFormat('###.00#', 'de');
-    return deFormat.format(double.parse(val));
-  }
-  //convert back to double
-  static num enFormat(String val) {
-    final deFormat = NumberFormat.decimalPattern(
-      'de',
-    );
-    return deFormat.parse(val);
-  }
-
-  List<Items> itemsList = [];
-  List<OptionsModel> optionList = [
-    OptionsModel(name: 'Mango-chutney',price: 7.90),
-    OptionsModel(name: 'Minzsauce',price: 9.00),
-    OptionsModel(name: 'Ohne Sauce',price: 11.00),
-  ];
-  List<ToppingModel> toppingList = [
-    ToppingModel(name: 'Ananas', price: 2.00),
-    ToppingModel(name: 'Blumenkohl', price: 2.00),
-  ];
-
-  @override
-  void initState() {
-    loadTabChild(widget.tabIndex, widget.homeData);
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: List.generate(
-        itemsList.length,
+        widget.homeData[widget.tabIndex].items?.length ?? 0,
         (index) => GestureDetector(
           onTap: () {
-            _onItemPressed(index);
+            FocusManager.instance.primaryFocus?.unfocus();
+            if(widget.homeData[widget.tabIndex].items![index].options != null && widget.homeData[widget.tabIndex].items![index].options!.isNotEmpty){
+              _onItemPressed(index);
+            }else{
+              final cart = Provider.of<CartStateMgmt>(context,listen: false);
+              cart.addItem(
+                  widget.homeData[widget.tabIndex]
+                      .items![index], null, []);
+            }
           },
           child: Container(
             padding: const EdgeInsets.all(7),
@@ -65,7 +41,19 @@ class _SecondState extends State<TabChild> {
             height: MediaQuery.of(context).size.width * 0.19,
             decoration: const BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.all(Radius.circular(5))),
+                borderRadius: BorderRadius.all(Radius.circular(5)),
+              boxShadow: [
+                BoxShadow(
+                  color: Color(0x0B000000),
+                  blurRadius: 4.0,
+                  spreadRadius: 0.0,
+                  offset: Offset(
+                    0.0,
+                    4.0,
+                  ),
+                )
+              ],
+            ),
             child: Row(
               children: <Widget>[
                 SizedBox(
@@ -92,7 +80,7 @@ class _SecondState extends State<TabChild> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                itemsList[index].name.toString(),
+                                widget.homeData[widget.tabIndex].items![index].name.toString(),
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 2,
                                 style: const TextStyle(
@@ -104,8 +92,7 @@ class _SecondState extends State<TabChild> {
                                 height: 3,
                               ),
                               Text(
-                                deFormat(itemsList[index].price.toString()) +
-                                    " €",
+                                "${CartStateMgmt.deFormat(widget.homeData[widget.tabIndex].items![index].price.toString())} €",
                                 style: const TextStyle(
                                     color: colorOrange,
                                     fontSize: 14,
@@ -119,6 +106,7 @@ class _SecondState extends State<TabChild> {
                         ),
                         GestureDetector(
                           onTap: () {
+                            FocusManager.instance.primaryFocus?.unfocus();
                             _onItemInfoPressed(index);
                           },
                           child: Container(
@@ -153,7 +141,7 @@ class _SecondState extends State<TabChild> {
                   width: 26,
                   child: Consumer<CartStateMgmt>(builder: (context, cart, child) {
                     int? itemCount;
-                    try {itemCount = cart.cartItems[cart.cartItems.indexWhere((e) => e.item == itemsList[index])].count;
+                    try {itemCount = cart.cartItems[cart.cartItems.indexWhere((e) => e.id == widget.homeData[widget.tabIndex].items![index].id)].quantity;
                     } on RangeError {
                       itemCount = 0;
                     }
@@ -183,6 +171,11 @@ class _SecondState extends State<TabChild> {
   }
 
   void _onItemPressed(int itemIndex) {
+    final List<Option>? options = widget.homeData[widget.tabIndex].items![itemIndex].options;
+    int? optionIndex;
+    List<Topping>? selectedToppings = [];
+    bool toppingHeight = false;
+
     showModalBottomSheet(
         backgroundColor: Colors.transparent,
         isScrollControlled: true,
@@ -190,11 +183,20 @@ class _SecondState extends State<TabChild> {
         context: context,
         builder: (context)
     {
-      return
-        Consumer<CartStateMgmt>(builder: (context, cart, child) {
-      return Container(
+      return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return Consumer<CartStateMgmt>(builder: (context, cart, child) {
+              return SingleChildScrollView(
+                child: Container(
                   color: const Color(0x00000000),
                   child: Container(
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF0EEFC),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(25),
+                        topRight: Radius.circular(25),
+                      ),
+                    ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.end,
@@ -244,12 +246,15 @@ class _SecondState extends State<TabChild> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: ListView.builder(
-                              itemCount: 3,
+                              itemCount: options?.length,
                               shrinkWrap: true,
                               itemBuilder: (context, index) {
                                 return GestureDetector(
                                   onTap: () {
-                                    cart.changeOptionIndex(index);
+                                    setState(() {
+                                      optionIndex = index;
+                                      toppingHeight = true;
+                                    });
                                   },
                                   child: Container(
                                     margin: const EdgeInsets.symmetric(
@@ -261,20 +266,24 @@ class _SecondState extends State<TabChild> {
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 16),
                                             child: Icon(
-                                                cart.optionIndex == index
+                                                optionIndex == index
                                                     ? Icons.radio_button_checked
                                                     : Icons.radio_button_off,
                                                 color: colorOrange
                                             )),
                                         Expanded(
-                                            child: Text(optionList[index].name.toString(),
+                                            child: Text(
+                                                options![index].name.toString(),
                                                 style: const TextStyle(
                                                     color: colorBlue))),
                                         Padding(
                                           padding: const EdgeInsets.symmetric(
                                               horizontal: 16),
-                                          child: Text('${deFormat(optionList[index].price.toString())} €',
-                                              style: const TextStyle(color: colorBlue,
+                                          child: Text('${CartStateMgmt.deFormat(
+                                              options[index].price
+                                                  .toString())} €',
+                                              style: const TextStyle(
+                                                  color: colorBlue,
                                                   fontWeight: FontWeight
                                                       .w700)),)
                                       ],
@@ -284,86 +293,100 @@ class _SecondState extends State<TabChild> {
                               }
                           ),
                         ),
-                        Container(
-                          margin: const EdgeInsetsDirectional.fromSTEB(
-                              16, 8, 0, 6),
-                          alignment: Alignment.topLeft,
-                          child: const Text(
-                            'Wählen Sie Topping',
-                            style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700),
-                          ),
-                        ),
-                        Container(
-                          width: double.infinity,
-                          margin:
-                          const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 15),
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: ListView.builder(
-                              itemCount: 2,
-                              shrinkWrap: true,
-                              itemBuilder: (context, index) {
-                                return GestureDetector(
-                                  onTap: () {
-                                    cart.changeToppingIndex(index);
-                                  },
-                                  child: Container(
-                                    margin: const EdgeInsets.symmetric(
-                                        vertical: 5),
-                                    height: 30,
-                                    child: Row(
-                                      children: [
-                                        Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 16),
-                                            child: Icon(
-                                                cart.toppingIndex == index
-                                                    ? Icons.radio_button_checked
-                                                    : Icons.radio_button_off,
-                                                color: colorOrange
-                                            )),
-                                        Expanded(
-                                            child: Text(toppingList[index].name.toString(),
-                                                style: const TextStyle(
-                                                    color: colorBlue))),
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 16),
-                                          child: Text('${deFormat(toppingList[index].price.toString())} €',
-                                              style: const TextStyle(color: colorBlue,
-                                                  fontWeight: FontWeight
-                                                      .w700)),)
-                                      ],
-                                    ),
+
+                        Visibility(
+                          visible: optionIndex != null && options![optionIndex!].toppings!.isNotEmpty && options[optionIndex!].toppings != null ? true : false,
+                          child: Column(
+                            children: [
+                                Container(
+                                  margin: const EdgeInsetsDirectional.fromSTEB(
+                                      16, 8, 0, 6),
+                                  alignment: Alignment.topLeft,
+                                  child: const Text(
+                                    'Wählen Sie Topping',
+                                    style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700),
                                   ),
-                                );
-                              }
+                                ),
+                              Container(
+                                width: double.infinity,
+                                margin:
+                                const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 15),
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: ListView.builder(
+                                    itemCount: optionIndex != null ? (options![optionIndex!].toppings?.length ?? 0) : 0,
+                                    shrinkWrap: true,
+                                    itemBuilder: (context, index) {
+                                      return GestureDetector(
+                                        onTap: () {
+                                          if(selectedToppings.contains(options![optionIndex!].toppings![index])){
+                                            setState((){
+                                              selectedToppings.remove(options[optionIndex!].toppings![index]);
+                                            });
+                                          }else{
+                                            setState((){
+                                              selectedToppings.add(options[optionIndex!].toppings![index]);
+                                            });
+                                          }
+                                        },
+                                        child: Container(
+                                          margin: const EdgeInsets.symmetric(
+                                              vertical: 5),
+                                          height: 30,
+                                          child: Row(
+                                            children: [
+                                              Padding(
+                                                  padding: const EdgeInsets.symmetric(
+                                                      horizontal: 16),
+                                                  child: Icon(
+                                                      selectedToppings.contains(options![optionIndex!].toppings![index])
+                                                          ? Icons.radio_button_checked
+                                                          : Icons.radio_button_off,
+                                                      color: colorOrange
+                                                  )),
+                                              Expanded(
+                                                  child: Text(options[optionIndex!].toppings![index].name.toString(),
+                                                      style: const TextStyle(
+                                                          color: colorBlue))),
+                                              Padding(
+                                                padding: const EdgeInsets.symmetric(
+                                                    horizontal: 16),
+                                                child: Text('${CartStateMgmt.deFormat(options[optionIndex!].toppings![index].price.toString())} €',
+                                                    style: const TextStyle(color: colorBlue,
+                                                        fontWeight: FontWeight
+                                                            .w700)),)
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                ),
+                              ),
+                            ],
                           ),
                         ),
+
                         GestureDetector(
                           onTap: () {
-                            cart.add(
-                                widget.homeData[widget.tabIndex]
-                                    .items![itemIndex]);
-                            Navigator.pop(context);
+                            if (optionIndex != null) {
+                              cart.addItem(
+                                  widget.homeData[widget.tabIndex]
+                                      .items![itemIndex], optionIndex, selectedToppings);
+                              Navigator.pop(context);
+                            }
                           },
                           child: Container(
                             height: 60,
                             decoration: BoxDecoration(
-                              color: cart.cartItems
-                                  .where((e) =>
-                              e.item ==
-                                  widget.homeData[widget.tabIndex]
-                                      .items![itemIndex])
-                                  .isEmpty
-                                  ? const Color(0xFFF86600)
-                                  : colorGreen,
+                              color: optionIndex == null
+                                  ? Colors.grey
+                                  : const Color(0xFFF86600),
                               borderRadius: const BorderRadius.only(
                                 topLeft: Radius.circular(15),
                                 topRight: Radius.circular(15),
@@ -383,15 +406,10 @@ class _SecondState extends State<TabChild> {
                         ),
                       ],
                     ),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFF0EEFC),
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(25),
-                        topRight: Radius.circular(25),
-                      ),
-                    ),
                   ),
-                );
+                ),
+              );
+            });
           });
     });
   }
@@ -408,6 +426,13 @@ class _SecondState extends State<TabChild> {
           return Container(
             color: const Color(0x00000000),
             child: Container(
+              decoration: const BoxDecoration(
+                color: Color(0xFFF0EEFC),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(25),
+                  topRight: Radius.circular(25),
+                ),
+              ),
               child: Column(
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -512,44 +537,8 @@ class _SecondState extends State<TabChild> {
                           ),
                         ]))
                   ]),
-              decoration: const BoxDecoration(
-                color: Color(0xFFF0EEFC),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(25),
-                  topRight: Radius.circular(25),
-                ),
-              ),
             ),
           );
         });
   }
-
-  void loadTabChild(int index, List<Data> homeData) {
-
-    for (int i = 0; i < widget.homeData[index].items!.length; i++) {
-      itemsList.add(widget.homeData[index].items![i]);
-    }
-  }
-}
-
-class OptionsModel {
-  String? name;
-  double? price;
-
-  OptionsModel(
-      {
-        this.name,
-        this.price
-      });
-}
-
-class ToppingModel {
-  String? name;
-  double? price;
-
-  ToppingModel(
-      {
-        this.name,
-        this.price
-      });
 }

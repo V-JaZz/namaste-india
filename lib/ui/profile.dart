@@ -18,7 +18,7 @@ class _ProfileState extends State<Profile> {
             return RotatedBox(
               quarterTurns: 1,
               child: IconButton(
-                icon: Icon(
+                icon: const Icon(
                   Icons.bar_chart_rounded,
                   color: Colors.black,
                 ),
@@ -32,13 +32,13 @@ class _ProfileState extends State<Profile> {
         actions: [
           IconButton(
               color: Colors.black,
-              icon: Icon(Icons.search),
+              icon: const Icon(Icons.search),
               onPressed: () {
                 Navigator.pushNamed(context, '/search');
               }),
         ],
       ),
-      body: Center(
+      body: const Center(
         child: Text('Profile Page'),
       ),
     );

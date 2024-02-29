@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
-import 'package:namastey_india/constant/common.dart';
 import 'package:namastey_india/ui/otp_bottomsheet.dart';
-import 'package:namastey_india/ui/share_location.dart';
 import '../constant/colors.dart';
 import '../repository/sendOtpRepo.dart';
 
-class pNoBottom extends StatefulWidget {
-  const pNoBottom({Key? key}) : super(key: key);
+class PhoneNoBottom extends StatefulWidget {
+  final String? page;
+
+  const PhoneNoBottom({Key? key, this.page}) : super(key: key);
 
   @override
-  State<pNoBottom> createState() => _pNoBottomState();
+  State<PhoneNoBottom> createState() => _PhoneNoBottomState();
 
 }
 
-class _pNoBottomState extends State<pNoBottom> {
+class _PhoneNoBottomState extends State<PhoneNoBottom> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   final TextEditingController controller = TextEditingController();
@@ -105,6 +105,7 @@ class _pNoBottomState extends State<pNoBottom> {
                               textFieldController: controller,
                               formatInput: false,
                               inputDecoration: const InputDecoration(
+                                filled: false,
                                 enabledBorder: UnderlineInputBorder(
                                   borderSide: BorderSide(color: Color(0x38000000)),
                                 ),
@@ -118,8 +119,7 @@ class _pNoBottomState extends State<pNoBottom> {
                               keyboardType: const TextInputType.numberWithOptions(
                                   signed: true, decimal: true),
                               onSaved: (PhoneNumber number) {
-                                print("LenghtNumber " +
-                                    number.phoneNumber!.length.toString());
+                                print("LenghtNumber ${number.phoneNumber!.length}");
                                 if (number.phoneNumber!.length == 13) {
                                   print(' Saved Phone: $number');
                                   setState(() {
@@ -162,16 +162,16 @@ class _pNoBottomState extends State<pNoBottom> {
                                 width: double.infinity,
                                 height: 50,
                                 margin: const EdgeInsets.symmetric(horizontal: 10),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(4),
+                                  color: colorOrange,
+                                ),
                                 child: Center(
                                   child: Text(
                                     buttonText,
                                     style: const TextStyle(
-                                        color: Colors.white, fontSize: 18),
+                                        color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500),
                                   ),
-                                ),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(4),
-                                  color: colorOrange,
                                 ),
                               ),
                             ),
@@ -221,9 +221,9 @@ class _pNoBottomState extends State<pNoBottom> {
             backgroundColor: Colors.transparent,
             resizeToAvoidBottomInset: true,
             body: Container(
-              child: otpBottom(phone: number),
               alignment: Alignment.bottomCenter,
               color: Colors.transparent,
+              child: OtpBottom(phone: number,page: widget.page),
             ),
           );
         });

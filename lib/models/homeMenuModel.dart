@@ -1,167 +1,150 @@
-class homemodelmenu {
+// To parse this JSON data, do
+//
+//     final homeMenuModel = homeMenuModelFromJson(jsonString);
+
+import 'dart:convert';
+
+HomeMenuModel homeMenuModelFromJson(String str) => HomeMenuModel.fromJson(json.decode(str));
+
+class HomeMenuModel {
+  HomeMenuModel({
+    this.success,
+    this.data,
+  });
+
   bool? success;
   List<Data>? data;
 
-  homemodelmenu({ this.success, this.data});
-
-  homemodelmenu.fromJson(Map<String, dynamic> json) {
-    success = json['success'];
-    if (json['data'] != null) {
-      data = <Data>[];
-      json['data'].forEach((v) {
-        data!.add(Data.fromJson(v));
-      });
-    }
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
-    data['success'] = success;
-    if (this.data != null) {
-      data['data'] = this.data!.map((v) => v.toJson()).toList();
-    }
-    return data;
-  }
+  factory HomeMenuModel.fromJson(Map<String, dynamic> json) => HomeMenuModel(
+    success: json["success"],
+    data: json["data"] == null ? [] : List<Data>.from(json["data"]!.map((x) => Data.fromJson(x))),
+  );
 }
 
-class  Data {
-  String? sId;
+class Data {
+  Data({
+    this.id,
+    this.name,
+    this.items,
+    this.description,
+    this.position,
+    this.discount,
+    this.excludeDiscount,
+    this.imageName,
+  });
+
+  String? id;
   String? name;
-  List<Items>? items;
-  Null? description;
+  List<Item>? items;
+  String? description;
   int? position;
   int? discount;
   bool? excludeDiscount;
   String? imageName;
 
-  Data(
-      {
-        this.sId,
-        this.name,
-        this.items,
-        this.description,
-        this.position,
-        this.discount,
-        this.excludeDiscount,
-        this.imageName});
-
-  Data.fromJson(Map<String, dynamic> json) {
-    sId = json['_id'];
-    name = json['name'];
-    if (json['items'] != null) {
-      items = <Items>[];
-      json['items'].forEach((v) {
-        items?.add(Items.fromJson(v));
-      });
-    }
-    description = json['description'];
-    position = json['position'];
-    discount = json['discount'];
-    excludeDiscount = json['excludeDiscount'];
-    imageName = json['imageName'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
-    data['_id'] = sId;
-    data['name'] = name;
-    if (items != null) {
-      data['items'] = items!.map((v) => v.toJson()).toList();
-    }
-    data['description'] = description;
-    data['position'] = position;
-    data['discount'] = discount;
-    data['excludeDiscount'] = excludeDiscount;
-    data['imageName'] = imageName;
-    return data;
-  }
+  factory Data.fromJson(Map<String, dynamic> json) => Data(
+    id: json["_id"],
+    name: json["name"],
+    items: json["items"] == null ? [] : List<Item>.from(json["items"]!.map((x) => Item.fromJson(x))),
+    description: json["description"],
+    position: json["position"],
+    discount: json["discount"],
+    excludeDiscount: json["excludeDiscount"],
+    imageName: json["imageName"],
+  );
 }
 
-class Items {
-  String? sId;
-  List<Null>? options;
-  List<Null>? variants;
+class Item {
+  Item({
+    this.id,
+    this.options,
+    this.variants,
+    this.discount,
+    this.description,
+    this.excludeDiscount,
+    this.imageName,
+    this.name,
+    this.category,
+    this.price,
+    this.allergies,
+  });
+
+  String? id;
+  List<Option>? options;
+  List<dynamic>? variants;
   int? discount;
   String? description;
   bool? excludeDiscount;
   String? imageName;
   String? name;
   Category? category;
-  String? price;
-  List<Allergies>? allergies;
+  double? price;
+  List<Allergy>? allergies;
 
-  Items(
-      {
-        this.sId,
-        this.options,
-        this.variants,
-        this.discount,
-        this.description,
-        this.excludeDiscount,
-        this.imageName,
-        this.name,
-        this.category,
-        this.price,
-        this.allergies});
+  factory Item.fromJson(Map<String, dynamic> json) => Item(
+    id: json["_id"],
+    options: json["options"] == null ? [] : List<Option>.from(json["options"]!.map((x) => Option.fromJson(x))),
+    variants: json["variants"] == null ? [] : List<dynamic>.from(json["variants"]!.map((x) => x)),
+    discount: json["discount"],
+    description: json["description"],
+    excludeDiscount: json["excludeDiscount"],
+    imageName: json["imageName"],
+    name: json["name"],
+    category: json["category"] == null ? null : Category.fromJson(json["category"]),
+    price: json["price"]?.toDouble(),
+    allergies: json["allergies"] == null ? [] : List<Allergy>.from(json["allergies"]!.map((x) => Allergy.fromJson(x))),
+  );
+}
 
-  Items.fromJson(Map<String, dynamic> json) {
-    sId = json['_id'];
-    if (json['options'] != null) {
-      options = <Null>[];
-      json['options'].forEach((v) {
-        //options?.add(new Null!.fromJson(v));
-      });
-    }
-    if (json['variants'] != null) {
-      variants = <Null>[];
-      json['variants'].forEach((v) {
-        //variants!.add(new Null.fromJson(v));
-      });
-    }
-    discount = json['discount'];
-    description = json['description'];
-    excludeDiscount = json['excludeDiscount'];
-    imageName = json['imageName'];
-    name = json['name'];
-    category = (json['category'] != null
-        ? Category.fromJson(json['category'])
-        : null)!;
-    price = json['price'].toString();
-    if (json['allergies'] != null) {
-      allergies = <Allergies>[];
-      json['allergies'].forEach((v) {
-        allergies?.add(Allergies.fromJson(v));
-      });
-    }
-  }
+class Allergy {
+  Allergy({
+    this.id,
+    this.description,
+    this.createdOn,
+    this.isDeleted,
+    this.restaurantId,
+    this.name,
+    this.v,
+    this.createdAt,
+    this.updatedAt,
+  });
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
-    data['_id'] = sId;
-    if (options != null) {
-      //data['options'] = this.options!.map((v) => v.toJson()).toList();
-    }
-    if (variants != null) {
-      //data['variants'] = this.variants.map((v) => v!.toJson()).toList();
-    }
-    data['discount'] = discount;
-    data['description'] = description;
-    data['excludeDiscount'] = excludeDiscount;
-    data['imageName'] = imageName;
-    data['name'] = name;
-    if (category != null) {
-      data['category'] = category?.toJson();
-    }
-    data['price'] = price;
-    if (allergies != null) {
-      data['allergies'] = allergies?.map((v) => v.toJson()).toList();
-    }
-    return data;
-  }
+  String? id;
+  String? description;
+  DateTime? createdOn;
+  bool? isDeleted;
+  String? restaurantId;
+  String? name;
+  int? v;
+  DateTime? createdAt;
+  DateTime? updatedAt;
+
+  factory Allergy.fromJson(Map<String, dynamic> json) => Allergy(
+    id: json["_id"],
+    description: json["description"],
+    createdOn: json["createdOn"] == null ? null : DateTime.parse(json["createdOn"]),
+    isDeleted: json["isDeleted"],
+    restaurantId: json["restaurantId"],
+    name: json["name"],
+    v: json["__v"],
+    createdAt: json["createdAt"] == null ? null : DateTime.parse(json["createdAt"]),
+    updatedAt: json["updatedAt"] == null ? null : DateTime.parse(json["updatedAt"]),
+  );
 }
 
 class Category {
-  String? sId;
+  Category({
+    this.id,
+    this.name,
+    this.isActive,
+    this.description,
+    this.discount,
+    this.excludeDiscount,
+    this.position,
+    this.imageName,
+  });
+
+  String? id;
   String? name;
   bool? isActive;
   String? description;
@@ -170,88 +153,104 @@ class Category {
   int? position;
   String? imageName;
 
-  Category(
-      {
-        this.sId,
-        this.name,
-        this.isActive,
-        this.description,
-        this.discount,
-        this.excludeDiscount,
-        this.position,
-        this.imageName});
-
-  Category.fromJson(Map<String, dynamic> json) {
-    sId = json['_id'];
-    name = json['name'];
-    isActive = json['isActive'];
-    description = json['description'];
-    discount = json['discount'];
-    excludeDiscount = json['excludeDiscount'];
-    position = json['position'];
-    imageName = json['imageName'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
-    data['_id'] = sId;
-    data['name'] = name;
-    data['isActive'] = isActive;
-    data['description'] = description;
-    data['discount'] = discount;
-    data['excludeDiscount'] = excludeDiscount;
-    data['position'] = position;
-    data['imageName'] = imageName;
-    return data;
-  }
+  factory Category.fromJson(Map<String, dynamic> json) => Category(
+    id: json["_id"],
+    name: json["name"],
+    isActive: json["isActive"],
+    description: json["description"],
+    discount: json["discount"],
+    excludeDiscount: json["excludeDiscount"],
+    position: json["position"],
+    imageName: json["imageName"],
+  );
 }
 
-class Allergies {
-  String? sId;
-  String? description;
-  String? createdOn;
+class Option {
+  Option({
+    this.toppingGroup,
+    this.minToppings,
+    this.maxToppings,
+    this.createdOn,
+    this.restaurantId,
+    this.id,
+    this.name,
+    this.createdAt,
+    this.updatedAt,
+    this.price,
+    this.toppings,
+  });
+
+  String? toppingGroup;
+  int? minToppings;
+  int? maxToppings;
+  DateTime? createdOn;
+  String? restaurantId;
+  String? id;
+  String? name;
+  DateTime? createdAt;
+  DateTime? updatedAt;
+  String? price;
+  List<Topping>? toppings;
+
+  factory Option.fromJson(Map<String, dynamic> json) => Option(
+    toppingGroup: json["toppingGroup"],
+    minToppings: json["minToppings"],
+    maxToppings: json["maxToppings"],
+    createdOn: json["createdOn"] == null ? null : DateTime.parse(json["createdOn"]),
+    restaurantId: json["restaurantId"],
+    id: json["_id"],
+    name: json["name"],
+    createdAt: json["createdAt"] == null ? null : DateTime.parse(json["createdAt"]),
+    updatedAt: json["updatedAt"] == null ? null : DateTime.parse(json["updatedAt"]),
+    price: json["price"],
+    toppings: json["toppings"] == null ? [] : List<Topping>.from(json["toppings"]!.map((x) => Topping.fromJson(x))),
+  );
+}
+
+class Topping {
+  Topping({
+    this.id,
+    this.createdOn,
+    this.isDeleted,
+    this.restaurantId,
+    this.name,
+    this.price,
+    this.v,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  String? id;
+  DateTime? createdOn;
   bool? isDeleted;
   String? restaurantId;
   String? name;
-  int? iV;
-  String? createdAt;
-  String? updatedAt;
+  double? price;
+  int? v;
+  DateTime? createdAt;
+  DateTime? updatedAt;
 
-  Allergies(
-      {
-        this.sId,
-        this.description,
-        this.createdOn,
-        this.isDeleted,
-        this.restaurantId,
-        this.name,
-        this.iV,
-        this.createdAt,
-        this.updatedAt});
+  factory Topping.fromJson(Map<String, dynamic> json) => Topping(
+    id: json["_id"],
+    createdOn: json["createdOn"] == null ? null : DateTime.parse(json["createdOn"]),
+    isDeleted: json["isDeleted"],
+    restaurantId: json["restaurantId"],
+    name: json["name"],
+    price: json["price"]?.toDouble(),
+    v: json["__v"],
+    createdAt: json["createdAt"] == null ? null : DateTime.parse(json["createdAt"]),
+    updatedAt: json["updatedAt"] == null ? null : DateTime.parse(json["updatedAt"]),
+  );
 
-  Allergies.fromJson(Map<String, dynamic> json) {
-    sId = json['_id'];
-    description = json['description'];
-    createdOn = json['createdOn'];
-    isDeleted = json['isDeleted'];
-    restaurantId = json['restaurantId'];
-    name = json['name'];
-    iV = json['__v'];
-    createdAt = json['createdAt'];
-    updatedAt = json['updatedAt'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
-    data['_id'] = sId;
-    data['description'] = description;
-    data['createdOn'] = createdOn;
-    data['isDeleted'] = isDeleted;
-    data['restaurantId'] = restaurantId;
-    data['name'] = name;
-    data['__v'] = iV;
-    data['createdAt'] = createdAt;
-    data['updatedAt'] = updatedAt;
-    return data;
-  }
+  Map<String, dynamic> toJson() => {
+    "_id": id,
+    "createdOn": createdOn?.toIso8601String(),
+    "isDeleted": isDeleted,
+    "restaurantId": restaurantId,
+    "name": name,
+    "price": price,
+    "__v": v,
+    "createdAt": createdAt?.toIso8601String(),
+    "updatedAt": updatedAt?.toIso8601String(),
+  };
 }

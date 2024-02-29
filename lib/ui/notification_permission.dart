@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
 import 'package:namastey_india/ui/share_location.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:notification_permissions/notification_permissions.dart';
 
 import '../constant/colors.dart';
-import '../tabs/tabspage.dart';
 
 const Color accentPurpleColor = Color(0xFF6A53A1);
 const Color accentPinkColor = Color(0xFFF99BBD);
@@ -71,22 +69,23 @@ class NotificationPermission extends StatelessWidget {
                       width: double.infinity,
                       height: 50,
                       margin: const EdgeInsets.all(14),
+
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(4),
+                          color: Colors.white),
                       child: const Center(
                           child: Text(
                             "Notifiy Me",
                             style: TextStyle(color: Colors.orange,fontSize: 17,fontWeight: FontWeight.bold),
                           )),
 
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(4),
-                          color: Colors.white),
-
                     )),
                 GestureDetector(
                   onTap: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (_) => ShareLocation()),
+
+                    Get.off(
+                            () => ShareLocation(), //next page class
+                        transition: Transition.native //transition effect
                     );
                   },
                   child: const Padding(
@@ -115,15 +114,25 @@ class NotificationPermission extends StatelessWidget {
     if (status.isGranted) {
       print('notification permission granted');
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => ShareLocation()),
+      Get.off(
+              () => ShareLocation(), //next page class
+          transition: Transition.native //transition effect
       );
 
     } else if (status.isDenied) {
       print('notification permission denied');
       await [ Permission.notification, ].request();
       getNotificationPermission(context);
+
+      var status = await Permission.notification.status;
+      if (status.isGranted) {
+        print('notification permission granted');
+
+        Get.off(
+                () => ShareLocation(), //next page class
+            transition: Transition.native //transition effect
+        );
+      }
 
     } else if (status.isPermanentlyDenied || status.isRestricted) {
       print('notification permission permanently denied');
@@ -141,16 +150,16 @@ class NotificationPermission extends StatelessWidget {
               actions: [
                 ElevatedButton(onPressed: (){
                   Navigator.pop(context);
-                }, child: const Text("Cancel",style: TextStyle(color: colorBlue),),
+                },
                     style: const ButtonStyle(
                       backgroundColor: MaterialStatePropertyAll(Colors.white),
-                    )),
+                    ), child: const Text("Cancel",style: TextStyle(color: colorBlue),)),
                 ElevatedButton(onPressed: (){
                   openAppSettings();
-                }, child: const Text("Open Settings"),
+                },
                     style: const ButtonStyle(
                       backgroundColor: MaterialStatePropertyAll(colorOrange),
-                    )),
+                    ), child: const Text("Open Settings")),
               ],
             );
           });

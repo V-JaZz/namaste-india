@@ -3,28 +3,29 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
-import 'package:namastey_india/constant/common.dart';
+import 'package:get/get.dart';
 import 'package:namastey_india/ui/add_details.dart';
 import 'package:provider/provider.dart';
 import '../Provider/UserDataStateMgmt.dart';
 import '../constant/colors.dart';
-import '../models/userLoginDataModel.dart';
 import '../repository/verifyOtpRepo.dart';
 import '../repository/sendOtpRepo.dart';
+import 'order_mode.dart';
 
-class otpBottom extends StatefulWidget {
+class OtpBottom extends StatefulWidget {
   final phone;
+  final String? page;
 
-  otpBottom({required this.phone});
+  const OtpBottom({Key? key, required this.phone, this.page}) : super(key: key);
 
   @override
-  State<otpBottom> createState() => _otpBottomState();
+  State<OtpBottom> createState() => _OtpBottomState();
 }
 
-class _otpBottomState extends State<otpBottom> {
+class _OtpBottomState extends State<OtpBottom> {
 
   late VerifyOtpRepository _verifyOtpRepository;
-  late SendOtpRepository _SendOtpRepository;
+  late SendOtpRepository _sendOtpRepository;
   late String otpNumber;
   late Timer _timer;
   dynamic sec = 30;
@@ -55,7 +56,7 @@ class _otpBottomState extends State<otpBottom> {
   @override
   void initState() {
     _verifyOtpRepository = VerifyOtpRepository(context);
-    _SendOtpRepository = SendOtpRepository(context);
+    _sendOtpRepository = SendOtpRepository(context);
     startTimer();
     super.initState();
   }
@@ -84,7 +85,7 @@ class _otpBottomState extends State<otpBottom> {
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text("Enter the 4-digit code sent to you at ",style: TextStyle(
-                      color: Color(0xFF7C75AF), fontSize: 18, fontFamily: fontBold),),
+                      color: Color(0xFF7C75AF), fontSize: 18),),
                 ),
               ),
               Padding(
@@ -94,7 +95,7 @@ class _otpBottomState extends State<otpBottom> {
                     child: Text(
                       widget.phone.toString(),
                       style: const TextStyle(
-                          color: Color(0xFFF86600), fontSize: 18, fontFamily: fontBold),
+                          color: Color(0xFFF86600), fontSize: 18),
                     )),
               ),
               const SizedBox(
@@ -148,7 +149,7 @@ class _otpBottomState extends State<otpBottom> {
                     alignment: Alignment.centerLeft,
                     child: Text(
                         resendText + sec.toString(),
-                      style: const TextStyle(fontSize: 12, fontFamily: fontRegular, color: Color(0xFF4F5463)),
+                      style: const TextStyle(fontSize: 12, color: Color(0xFF4F5463)),
                     ),
                   ),
                 ),
@@ -158,11 +159,14 @@ class _otpBottomState extends State<otpBottom> {
               ),
               GestureDetector(
                 onTap: () {
+                  if(otpNumber.isEmpty){
+                    return;
+                  }
                   if (verifyText=="Verify OTP") {
                     setState(() {
                       verifyText = "Verifying...";
                     });
-                    print('Digits ' + otpNumber);
+                    print('Digits $otpNumber');
                     verify(widget.phone, otpNumber);
                   }
                 },
@@ -170,11 +174,11 @@ class _otpBottomState extends State<otpBottom> {
                   width: double.infinity,
                   height: 50,
                   margin: const EdgeInsets.all(14),
-                  child: Center(
-                      child: Text(verifyText,
-                          style: const TextStyle(color: Colors.white, fontSize: 18))),
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(6), color: colorOrange),
+                  child: Center(
+                      child: Text(verifyText,
+                          style: const TextStyle(color: Colors.white, fontSize: 18,fontWeight: FontWeight.w500))),
                 ),
               )
             ],
@@ -183,7 +187,7 @@ class _otpBottomState extends State<otpBottom> {
   }
 
   void reSentStatus(String number) async {
-    bool? sentStatus = await _SendOtpRepository.login(number);
+    bool? sentStatus = await _sendOtpRepository.login(number);
     if(sentStatus==true){
       setState(() {
         resendText = 'Resent!';
@@ -198,22 +202,45 @@ class _otpBottomState extends State<otpBottom> {
   }
 
   void verify(String number, String OTP) async {
-    UserDataModel userData = await _verifyOtpRepository.verifyOtp(number, OTP);
+    dynamic userData = await _verifyOtpRepository.verifyOtp(number, OTP);
 
     if(userData.success){
 
-      final userDataState = Provider.of<UserDataStateMgmt>(context);
+      final userDataState = Provider.of<UserDataStateMgmt>(context,listen: false);
         userDataState.userData = userData.userData;
+
+      if(userDataState.userData?.isActive == true){
+
+        print('already verified and registered, skipped verification and registration!');
+
+        Navigator.of(context).pop();
+
+        Get.to(
+                () => const OrderMode(), //next page class
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.linear,
+            transition: Transition.rightToLeftWithFade //transition effect
+        );
+
+      }else{
+        if(widget.page == null){
+
+          Navigator.of(context).pop();
+
+          Get.to(
+                  () => const AddDetails(), //next page class
+              duration: const Duration(milliseconds: 400),
+              curve: Curves.linear,
+              transition: Transition.rightToLeftWithFade //transition effect
+          );
+        }else{
+          Navigator.of(context).pop();
+        }
+      }
 
       const snackBar = SnackBar(content: Text('phone number verified'));
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
 
-      Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const addDetails(),
-          )
-      );
     } else if(userData == false){
       setState(() {
         invalidVisible = true;

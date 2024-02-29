@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
-import 'package:namastey_india/constant/common.dart';
+import 'package:get/get.dart';
 import 'package:namastey_india/main.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
+import '../Provider/UserDataStateMgmt.dart';
 import '../constant/colors.dart';
 import '../repository/verifyOtpRepo.dart';
-import 'notification_permission.dart';
 import '../repository/sendOtpRepo.dart';
-import '../ui/globals.dart' as globals;
 
 class OtpScreen extends StatefulWidget {
   final phone;
-  OtpScreen({required this.phone});
+  const OtpScreen({required this.phone});
   @override
   _MyPhonePageState createState() => _MyPhonePageState();
 }
@@ -91,8 +90,7 @@ class _MyPhonePageState extends State<OtpScreen> {
                     "Enter the 4-digit code sent to you at ",
                     style: TextStyle(
                         color: Color(0xFF7C7C7C),
-                        fontSize: 18,
-                        fontFamily: fontBold),
+                        fontSize: 18,),
                   ),
                 ),
               ),
@@ -104,8 +102,7 @@ class _MyPhonePageState extends State<OtpScreen> {
                       widget.phone.toString(),
                       style: const TextStyle(
                           color: Colors.black,
-                          fontSize: 18,
-                          fontFamily: fontBold),
+                          fontSize: 18),
                     )),
               ),
               const SizedBox(
@@ -157,7 +154,7 @@ class _MyPhonePageState extends State<OtpScreen> {
                     alignment: Alignment.centerLeft,
                     child: Text(
                       resendText + sec.toString(),
-                      style: const TextStyle(fontSize: 12, fontFamily: fontRegular),
+                      style: const TextStyle(fontSize: 12),
                     )),
                 ),
               ),
@@ -170,7 +167,7 @@ class _MyPhonePageState extends State<OtpScreen> {
                     setState(() {
                       verifyText = "Verifying...";
                     });
-                    print("Digits " + otpNumber);
+                    print("Digits $otpNumber");
                     verify(widget.phone, otpNumber);
                   }
                 },
@@ -178,12 +175,12 @@ class _MyPhonePageState extends State<OtpScreen> {
                   width: double.infinity,
                   height: 50,
                   margin: const EdgeInsets.all(10),
-                  child: Center(
-                      child: Text(verifyText,
-                          style: const TextStyle(color: Colors.white, fontSize: 18))),
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(4),
                       color: colorOrange),
+                  child: Center(
+                      child: Text(verifyText,
+                          style: const TextStyle(color: Colors.white, fontSize: 18))),
                 ),
               )
             ],
@@ -219,14 +216,21 @@ class _MyPhonePageState extends State<OtpScreen> {
     dynamic userData = await _verifyOtpRepository.verifyOtp(number, OTP);
     if(userData.success){
 
-      Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(
-            builder: (context) {
-              return HomePage(userData: userData.userData);
-            },
-          ),
-              (e) => false);
+      final userDataState = Provider.of<UserDataStateMgmt>(context,listen: false);
+      try{
+        print('user data loaded');
+        userDataState.userData = userData.userData;
+        print(userDataState.userData!.contact.toString());
+        print(userDataState.userData!.isActive.toString());
+      }catch(e) {
+        print('user data not loaded $e');
+      }
+      Get.offAll(
+              () => const HomePage(), //next page class
+          duration: const Duration(milliseconds: 1000),
+          curve: Curves.decelerate,
+          transition: Transition.size //transition effect
+      );
 
     } else if(userData == false){
       setState(() {

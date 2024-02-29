@@ -22,7 +22,7 @@ class DataListResponseModel {
 
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['success'] = success;
     if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
@@ -122,7 +122,7 @@ class OrderDataModel {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['_id'] = sId;
     if (itemDetails != null) {
       data['itemDetails'] = itemDetails!.map((v) => v.toJson()).toList();
@@ -224,7 +224,7 @@ class ItemDetails {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['_id'] = sId;
     data['name'] = name;
     data['option'] = option;
@@ -281,7 +281,7 @@ class Toppings {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['_id'] = sId;
     data['createdOn'] = createdOn;
     data['isDeleted'] = isDeleted;
@@ -327,7 +327,7 @@ class UserDetails {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['isDelete'] = isDelete;
     data['firstName'] = firstName;
     data['lastName'] = lastName;
@@ -372,7 +372,7 @@ class SummaryData {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['_id'] = sId;
     data['acceptedOrder'] = acceptedOrder;
     data['declinedOrder'] = declinedOrder;

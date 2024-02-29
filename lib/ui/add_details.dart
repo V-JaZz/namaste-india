@@ -1,25 +1,36 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:namastey_india/constant/colors.dart';
+import 'package:namastey_india/repository/pickUpModeRepo.dart';
+import 'package:namastey_india/ui/phone_no_bottomsheet.dart';
 import 'package:provider/provider.dart';
+import '../Provider/CartDataStateMgmt.dart';
 import '../Provider/UserDataStateMgmt.dart';
+import '../models/registerDataModel.dart';
+import '../repository/deliveryModeRepo.dart';
 import '../sidemenu/side_menu.dart';
 import '../ui/order_mode.dart';
-import '../ui/globals.dart' as globals;
+import 'food_cart.dart';
 
-class addDetails extends StatefulWidget {
-  const addDetails({Key? key}) : super(key: key);
+class AddDetails extends StatefulWidget {
+  const AddDetails({Key? key}) : super(key: key);
 
   @override
-  State<addDetails> createState() => _addDetailsState();
+  State<AddDetails> createState() => _AddDetailsState();
 }
 
-enum deliveryMode { lieferung, abholung }
-
-class _addDetailsState extends State<addDetails> {
+class _AddDetailsState extends State<AddDetails> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  deliveryMode? _deliveryMode = deliveryMode.lieferung;
+  late final cart = Provider.of<CartStateMgmt>(context,listen: false);
+  late PickUpModeRepo _pickUpModeRepo;
+  late DeliveryModeRepo _deliveryModeRepo;
 
+  @override
+  void initState() {
+    _pickUpModeRepo = PickUpModeRepo(context);
+    _deliveryModeRepo = DeliveryModeRepo(context);
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -85,26 +96,23 @@ class _addDetailsState extends State<addDetails> {
                         )
                       ])),
                 ),
-                Row(
+                Consumer<CartStateMgmt>(builder: (context, cart, child) {
+                  return Row(
                   children: [
                     Row(
                       children: [
                         Radio(
-                          value: deliveryMode.lieferung,
-                          groupValue: _deliveryMode,
+                          value: DeliveryMode.lieferung,
+                          groupValue: cart.deliveryMode,
                           fillColor: MaterialStateProperty.all(
                               const Color(0xFFF86600)),
-                          onChanged: (deliveryMode? value) {
-                            setState(() {
-                              _deliveryMode = value;
-                            });
+                          onChanged: (DeliveryMode? value) {
+                            cart.deliveryMode = value;
                           },
                         ),
                         GestureDetector(
                             onTap:(){
-                              setState(() {
-                                _deliveryMode = deliveryMode.lieferung;
-                              });
+                              cart.deliveryMode = DeliveryMode.lieferung;
                             },
                             child: const Text('Lieferung',style: TextStyle(fontSize: 14,color: Color(0xFF2E266F)))),
                       ],
@@ -112,30 +120,28 @@ class _addDetailsState extends State<addDetails> {
                     Row(
                       children: [
                         Radio(
-                          value: deliveryMode.abholung,
-                          groupValue: _deliveryMode,
+                          value: DeliveryMode.abholung,
+                          groupValue: cart.deliveryMode,
                           fillColor: MaterialStateProperty.all(
                               const Color(0xFFF86600)),
-                          onChanged: (deliveryMode? value) {
-                            setState(() {
-                              _deliveryMode = value;
-                            });
+                          onChanged: (DeliveryMode? value) {
+                            cart.deliveryMode = value;
                           },
                         ),
                         GestureDetector(
                             onTap:(){
-                              setState(() {
-                                _deliveryMode = deliveryMode.abholung;
-                              });
+                              cart.deliveryMode = DeliveryMode.abholung;
                             },
                             child: const Text('Abholung',style: TextStyle(fontSize: 14,color: Color(0xFF2E266F)),))
                       ],
                     ),
                   ],
-                ),
+                );
+                }),
                 Builder(
                   builder: (context) {
-                    if(_deliveryMode == deliveryMode.lieferung){
+                    final myCart = Provider.of<CartStateMgmt>(context);
+                    if(myCart.deliveryMode == DeliveryMode.lieferung){
                       return Flexible(
                         child: Form(
                           key: _formKey,
@@ -148,6 +154,7 @@ class _addDetailsState extends State<addDetails> {
                                 child: TextFormField(
                                   decoration: customInputDecoration('Your Name'),
                                   keyboardType: TextInputType.name,
+                                  initialValue: user.userData?.firstName !=null ? ('${user.userData?.firstName ?? ''} ${user.userData?.lastName ?? ''}'):'' ,
                                   textInputAction: TextInputAction.next,
                                   cursorColor: colorOrange,
                                   validator: (value) {
@@ -157,25 +164,39 @@ class _addDetailsState extends State<addDetails> {
 
                                     return null;
                                   },
-                                  onSaved: (value) {},
+                                  onSaved: (value) {
+                                      user.setUserData.firstName = value;
+                                  },
                                 ),
                               ),
                               Padding(
                                 padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                                 child: TextFormField(
-                                  enabled: false,
+                                  readOnly: true,
                                   decoration: InputDecoration(
-                                    hintText: '858' ,
-
+                                    hintText: user.userData?.contact ?? '' ,
                                     fillColor: const Color(0xFFD9D4F6),
                                     hintStyle: const TextStyle(color: colorBlue),
 
-                                    disabledBorder: OutlineInputBorder(
+                                    border: OutlineInputBorder(
                                         borderSide: const BorderSide(color: Color(0xFFD9D4F6), width: 1, style: BorderStyle.solid),
                                         borderRadius: BorderRadius.circular(6)),
 
+                                    enabledBorder: OutlineInputBorder(
+                                        borderSide: const BorderSide(color: Color(0xFFD9D4F6), width: 1, style: BorderStyle.solid),
+                                        borderRadius: BorderRadius.circular(6)),
+
+                                    focusedBorder: OutlineInputBorder(
+                                        borderSide: const BorderSide(color: colorBlue, width: 1, style: BorderStyle.solid),
+                                        borderRadius: BorderRadius.circular(6)),
+
                                   ),
-                                  onSaved: (value) {},
+                                  onTap: (){
+                                    _verifyNumber();
+                                  },
+                                  onSaved: (value) {
+                                    user.setUserData.contact = user.userData!.contact;
+                                    },
                                 ),
                               ),
                               Padding(
@@ -184,6 +205,7 @@ class _addDetailsState extends State<addDetails> {
                                   decoration: customInputDecoration('Email Address'),
                                   keyboardType: TextInputType.emailAddress,
                                   textInputAction: TextInputAction.next,
+                                  initialValue: user.userData?.email ?? '' ,
                                   cursorColor: colorOrange,
                                   validator: (value) {
                                     if (value!.isEmpty) {
@@ -194,7 +216,8 @@ class _addDetailsState extends State<addDetails> {
                                       return null;
                                     }
                                   },
-                                  onSaved: (value) {},
+                                  onSaved: (value) {
+                                    user.setUserData.email = value;},
                                 ),
                               ),
                               Padding(
@@ -203,6 +226,7 @@ class _addDetailsState extends State<addDetails> {
                                   decoration: customInputDecoration('Hausnummer'),
                                   keyboardType: TextInputType.streetAddress,
                                   textInputAction: TextInputAction.next,
+                                  initialValue: user.userData?.houseNumber ?? '' ,
                                   cursorColor: colorOrange,
                                   validator: (value) {
                                     if (value!.isEmpty) {
@@ -211,7 +235,8 @@ class _addDetailsState extends State<addDetails> {
 
                                     return null;
                                   },
-                                  onSaved: (value) {},
+                                  onSaved: (value) {
+                                    user.setUserData.houseNumber = value;},
                                 ),
                               ),
                               Padding(
@@ -220,6 +245,7 @@ class _addDetailsState extends State<addDetails> {
                                   decoration: customInputDecoration('Straße'),
                                   keyboardType: TextInputType.streetAddress,
                                   textInputAction: TextInputAction.next,
+                                  initialValue: user.userData?.street ?? '' ,
                                   cursorColor: colorOrange,
                                   validator: (value) {
                                     if (value!.isEmpty) {
@@ -228,7 +254,8 @@ class _addDetailsState extends State<addDetails> {
 
                                     return null;
                                   },
-                                  onSaved: (value) {},
+                                  onSaved: (value) {
+                                    user.setUserData.street = value;},
                                 ),
                               ),
                               Padding(
@@ -236,6 +263,7 @@ class _addDetailsState extends State<addDetails> {
                                 child: TextFormField(
                                   decoration: customInputDecoration('Stadt'),
                                   textInputAction: TextInputAction.next,
+                                  initialValue: user.userData?.city ?? '' ,
                                   cursorColor: colorOrange,
                                   validator: (value) {
                                     if (value!.isEmpty) {
@@ -244,23 +272,49 @@ class _addDetailsState extends State<addDetails> {
 
                                     return null;
                                   },
-                                  onSaved: (value) {},
+                                  onSaved: (value) {
+                                    user.setUserData.city = value;
+                                    },
                                 ),
                               ),
                               Padding(
                                 padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                                 child: TextFormField(
-                                  decoration: customInputDecoration('65185 JordanStrabe'),
-                                  textInputAction: TextInputAction.done,
-                                  cursorColor: colorOrange,
-                                  validator: (value) {
-                                    if (value!.isEmpty) {
-                                      return 'Required';
-                                    }
-
-                                    return null;
+                                  enabled: true,
+                                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                                  onTap: (){
+                                    _addAddress();
                                   },
-                                  onSaved: (value) {},
+                                  readOnly: true,
+                                  textInputAction: TextInputAction.done,
+                                  decoration: InputDecoration(
+                                    hintText: '${user.userPostCode} ${user.userAddress}',
+                                    fillColor: const Color(0xFFD9D4F6),
+                                    hintStyle: const TextStyle(color: colorBlue),
+
+                                    border: OutlineInputBorder(
+                                        borderSide: const BorderSide(color: Color(0xFFD9D4F6), width: 1, style: BorderStyle.solid),
+                                        borderRadius: BorderRadius.circular(6)),
+
+                                    enabledBorder: OutlineInputBorder(
+                                        borderSide: const BorderSide(color: Color(0xFFD9D4F6), width: 1, style: BorderStyle.solid),
+                                        borderRadius: BorderRadius.circular(6)),
+
+                                    focusedBorder: OutlineInputBorder(
+                                        borderSide: const BorderSide(color: colorBlue, width: 1, style: BorderStyle.solid),
+                                        borderRadius: BorderRadius.circular(6)),
+
+                                  ),
+                                  validator: (value) {
+                                    if(!user.acceptedPostcodes.contains(user.userPostCode) && cart.deliveryMode == DeliveryMode.lieferung){
+                                      return 'Post code not accepted';
+                                    }else{
+                                      return null;
+                                    }
+                                  },
+                                  onSaved: (value) {
+                                    user.setUserData.postcode = user.userPostCode;
+                                    user.setUserData.address = user.userAddress;},
                                 ),
                               )
                             ],
@@ -269,68 +323,87 @@ class _addDetailsState extends State<addDetails> {
                       );
                     }
                     else{
-                      return Form(
-                        key: _formKey,
-                        child: ListView(
-                          shrinkWrap: true,
-                          physics: const BouncingScrollPhysics(),
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                              child: TextFormField(
-                                decoration: customInputDecoration('Your Name'),
-                                keyboardType: TextInputType.name,
-                                textInputAction: TextInputAction.done,
-                                cursorColor: colorOrange,
-                                validator: (value) {
-                                  if (value!.isEmpty) {
-                                    return 'Name is required';
-                                  }
+                      return Flexible(
+                        child: Form(
+                          key: _formKey,
+                          child: ListView(
+                            shrinkWrap: true,
+                            physics: const BouncingScrollPhysics(),
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                                child: TextFormField(
+                                  decoration: customInputDecoration('Your Name'),
+                                  keyboardType: TextInputType.name,
+                                  initialValue: user.userData?.firstName !=null ? ('${user.userData?.firstName ?? ''} ${user.userData?.lastName ?? ''}'):'' ,
+                                  textInputAction: TextInputAction.done,
+                                  cursorColor: colorOrange,
+                                  validator: (value) {
+                                    if (value!.isEmpty) {
+                                      return 'Name is required';
+                                    }
 
-                                  return null;
-                                },
-                                onSaved: (value) {},
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                              child: TextFormField(
-                                enabled: false,
-                                decoration: InputDecoration(
-                                hintText: '858' ,
-
-                                fillColor: const Color(0xFFD9D4F6),
-                                hintStyle: const TextStyle(color: colorBlue),
-
-                                disabledBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(color: Color(0xFFD9D4F6), width: 1, style: BorderStyle.solid),
-                                borderRadius: BorderRadius.circular(6)),
-
-                                ),
-                                onSaved: (value) {},
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                              child: TextFormField(
-                                decoration: customInputDecoration('Email Address'),
-                                keyboardType: TextInputType.emailAddress,
-                                textInputAction: TextInputAction.next,
-                                cursorColor: colorOrange,
-                                validator: (value) {
-                                  if (value!.isEmpty) {
-                                    return 'Email is required';
-                                  }else if (!value.isValidEmail()) {
-                                    return 'Invalid email';
-                                  }else{
                                     return null;
-                                  }
-                                },
-                                onSaved: (value) {},
+                                  },
+                                  onSaved: (value) {
+                                      user.setUserData.firstName = value;
+                                    },
+                                ),
                               ),
-                            )
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                                child: TextFormField(
+                                  readOnly: true,
+                                  textInputAction: TextInputAction.next,
+                                  decoration: InputDecoration(
+                                    hintText: user.userData?.contact ?? '' ,
+                                    fillColor: const Color(0xFFD9D4F6),
+                                    hintStyle: const TextStyle(color: colorBlue),
 
-                          ],
+                                    border: OutlineInputBorder(
+                                        borderSide: const BorderSide(color: Color(0xFFD9D4F6), width: 1, style: BorderStyle.solid),
+                                        borderRadius: BorderRadius.circular(6)),
+
+                                    enabledBorder: OutlineInputBorder(
+                                        borderSide: const BorderSide(color: Color(0xFFD9D4F6), width: 1, style: BorderStyle.solid),
+                                        borderRadius: BorderRadius.circular(6)),
+
+                                    focusedBorder: OutlineInputBorder(
+                                        borderSide: const BorderSide(color: colorBlue, width: 1, style: BorderStyle.solid),
+                                        borderRadius: BorderRadius.circular(6)),
+
+                                  ),
+                                  onTap: (){
+                                    _verifyNumber();
+                                  },
+                                  onSaved: (value) {
+                                    user.setUserData.contact = user.userData!.contact;},
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                                child: TextFormField(
+                                  decoration: customInputDecoration('Email Address'),
+                                  keyboardType: TextInputType.emailAddress,
+                                  textInputAction: TextInputAction.next,
+                                  initialValue: user.userData?.email ?? '' ,
+                                  cursorColor: colorOrange,
+                                  validator: (value) {
+                                    if (value!.isEmpty) {
+                                      return 'Email is required';
+                                    }else if (!value.isValidEmail()) {
+                                      return 'Invalid email';
+                                    }else{
+                                      return null;
+                                    }
+                                  },
+                                  onSaved: (value) {
+                                    user.setUserData.email = value;},
+                                ),
+                              )
+
+                            ],
+                          ),
                         ),
                       );
                     }
@@ -344,8 +417,11 @@ class _addDetailsState extends State<addDetails> {
                     }
                     _formKey.currentState!.save();
 
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => const orderMode()));
+                    if(cart.deliveryMode == DeliveryMode.abholung){
+                      sendPickUpDetails(firstName:user.setUserData.firstName!, contact:user.setUserData.contact!, email:user.setUserData.email!, lastName:'', token: user.userData?.token??'');
+                    }else{
+                      sendDeliveryDetails(firstName:user.setUserData.firstName!, contact:user.setUserData.contact!, email:user.setUserData.email!, lastName:'', token: user.userData?.token??'', houseNo:user.setUserData.houseNumber!, street:user.setUserData.street!, city:user.setUserData.city!, address:user.setUserData.address!, postCode:user.setUserData.postcode!);
+                    }
 
                   },
                   child: Container(
@@ -370,6 +446,120 @@ class _addDetailsState extends State<addDetails> {
       }),
     );
   }
+
+  void _addAddress() {
+    showModalBottomSheet(
+        backgroundColor: Colors.transparent,
+        isScrollControlled: true,
+        enableDrag: true,
+        context: context,
+        isDismissible: true,
+        builder: (context) {
+          return const AddAddress();
+        });
+  }
+
+  void _verifyNumber() {
+    showModalBottomSheet(
+        backgroundColor: Colors.transparent,
+        isScrollControlled: true,
+        enableDrag: true,
+        context: context,
+        isDismissible: true,
+        builder: (context) {
+          return Scaffold(
+            backgroundColor: Colors.transparent,
+            resizeToAvoidBottomInset: true,
+            body: GestureDetector(
+              onTap: () {
+                Navigator.pop(context);
+              },
+              child: Container(
+                alignment: Alignment.bottomCenter,
+                color: Colors.transparent,
+                child: const PhoneNoBottom(page: 'pop context',),
+              ),
+            ),
+          );
+        });
+  }
+
+
+  void sendPickUpDetails(
+      {required String firstName,
+      required String lastName,
+      required String contact,
+      required String email,
+      String? token}) async {
+
+    RegisterUser? data = await _pickUpModeRepo.pickUpModeUserDetails(firstName: firstName,lastName: lastName,email: email,contact: contact,token: token);
+
+    if(data == null){
+
+    }else if(data.success == true){
+      print('data.data!.email');
+          print(data.data!.email);
+
+      final user = Provider.of<UserDataStateMgmt>(context,listen: false);
+      user.userData?.isActive = true;
+
+      Get.off(
+              () => const OrderMode(), //next page class
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.linear,
+          transition: Transition.rightToLeft //transition effect
+      );
+      const snackBar = SnackBar(content: Text('added details successfully'));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+
+    }else if(data.success == false){
+      print("message:");
+      print(data.message);
+    }
+  }
+
+  void sendDeliveryDetails(
+      {required String firstName,
+        required String lastName,
+        required String contact,
+        required String email,
+        required String houseNo,
+        required String street,
+        required String city,
+        required String address,
+        required String postCode,
+        String? token}) async {
+
+    RegisterUser? data = await _deliveryModeRepo.deliveryModeUserDetails(firstName:firstName,lastName:lastName,email:email,contact:contact,token:token,houseNo:houseNo,street:street,city:city,address:address,postCode:postCode);
+
+    if(data == null){
+
+    }else if(data.success == true){
+
+      print('data.data!.email');
+      print(data.data!.email);
+      print('data.data!.firstName');
+      print(data.data!.firstName);
+      print('data.data!.lastName');
+      print(data.data!.lastName);
+      
+      final user = Provider.of<UserDataStateMgmt>(context,listen: false);
+      user.userData?.isActive = true;
+
+      Get.off(
+              () => const OrderMode(), //next page class
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.linear,
+          transition: Transition.rightToLeftWithFade //transition effect
+      );
+      const snackBar = SnackBar(content: Text('added details successfully'));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+
+    }else if(data.success == false){
+      print("message:");
+      print(data.message);
+    }
+  }
 }
 
 extension EmailValidator on String {
@@ -382,10 +572,6 @@ extension EmailValidator on String {
 customInputDecoration(String hintText) {
   return InputDecoration(
   hintText: hintText ,
-
-      //todo - if disabled then..
-      // fillColor: const Color(0xFFD9D4F6),
-      // hintStyle: const TextStyle(color: colorBlue),
 
     focusedBorder: OutlineInputBorder(
         borderSide: const BorderSide(color: Colors.black26, width: 1, style: BorderStyle.solid),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:namastey_india/ui/about.dart';
 
 import '../ui/home.dart';
@@ -16,23 +15,23 @@ class TabNavigationItem {
   static List<TabNavigationItem> get items => [
         TabNavigationItem(
           page: Home(),
-          icon: Icon(Icons.home),
-          title: Text("Home"),
+          icon: const Icon(Icons.home),
+          title: const Text("Home"),
         ),
         TabNavigationItem(
           page: Profile(),
-          icon: Icon(Icons.home),
-          title: Text("Home"),
+          icon: const Icon(Icons.home),
+          title: const Text("Home"),
         ),
         TabNavigationItem(
       page: Search(),
-      icon: Icon(Icons.search),
-      title: Text("Search"),
+      icon: const Icon(Icons.search),
+      title: const Text("Search"),
     ),
         TabNavigationItem(
         page: About(),
-        icon: Icon(Icons.home),
-        title: Text("About"),
+        icon: const Icon(Icons.home),
+        title: const Text("About"),
         ),
       ];
 }

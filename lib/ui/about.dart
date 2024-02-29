@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:namastey_india/constant/colors.dart';
-import 'package:namastey_india/constant/common.dart';
 
 import '../sidemenu/side_menu.dart';
 
@@ -50,7 +49,7 @@ class _AboutState extends State<About> {
         body: Container(
             color: const Color(0xFFF0EEFC),
             child: ListView(children: [
-              Container(
+              SizedBox(
                 width: MediaQuery.of(context).size.width,
                 height: 150,
                 child: Image.asset(

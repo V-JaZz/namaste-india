@@ -1,21 +1,21 @@
-import 'dart:ui';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:namastey_india/ui/payment_mode.dart';
-import '../sidemenu/side_menu.dart';
-import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 
-class orderMode extends StatefulWidget {
-  const orderMode({Key? key}) : super(key: key);
+import '../sidemenu/side_menu.dart';
+
+class OrderMode extends StatefulWidget {
+  const OrderMode({Key? key}) : super(key: key);
 
   @override
-  State<orderMode> createState() => _orderModeState();
+  State<OrderMode> createState() => _OrderModeState();
 }
 
 enum _enum { Sofort, Sofort2 }
 
-class _orderModeState extends State<orderMode> {
+class _OrderModeState extends State<OrderMode> {
   _enum? _type = _enum.Sofort;
 
   String dropdownvalue = 'Sofort';
@@ -120,12 +120,11 @@ class _orderModeState extends State<orderMode> {
                         },
                         child:
                             const Text('Wählen Sie die Lieferzeit Ihrer Wahl',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Color(0xFF2E266F),
-                              fontWeight: FontWeight.w700,
-                            )
-                            ))
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Color(0xFF2E266F),
+                                  fontWeight: FontWeight.w700,
+                                )))
                   ],
                 ),
                 Container(
@@ -201,27 +200,28 @@ class _orderModeState extends State<orderMode> {
                     DatePicker.showDateTimePicker(context,
                         showTitleActions: true,
                         onChanged: (date) {
-                          print('change $date in time zone ' +
-                              date.timeZoneOffset.inHours.toString());
+                          print(
+                              'change $date in time zone ${date.timeZoneOffset.inHours}');
 
                           setState(() {
                             dateTime = date;
                           });
                         },
-                        theme: const DatePickerTheme(
-                            headerColor: Color(0xFFF0EEFC),
-                            backgroundColor: Color(0xFFF0EEFC),
-                            itemStyle: TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.w500,
-                                fontSize: 18),
-                            doneStyle: TextStyle(
-                                color: Color(0xFFF86600),
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500),
-                            cancelStyle: TextStyle(
-                                color: CupertinoColors.systemGrey,
-                                fontSize: 16)),
+                        theme: const DatePickerThemeData(
+                          headerForegroundColor: Color(0xFFF0EEFC),
+                          backgroundColor: Color(0xFFF0EEFC),
+                          // itemStyle: TextStyle(
+                          //     color: Colors.black,
+                          //     fontWeight: FontWeight.w500,
+                          //     fontSize: 18),
+                          // doneStyle: TextStyle(
+                          //     color: Color(0xFFF86600),
+                          //     fontSize: 18,
+                          //     fontWeight: FontWeight.w500),
+                          // cancelStyle: TextStyle(
+                          //     color: CupertinoColors.systemGrey,
+                          //     fontSize: 16)
+                        ),
                         onConfirm: (date) {
                           print('confirm $date');
 
@@ -251,8 +251,11 @@ class _orderModeState extends State<orderMode> {
           ),
           GestureDetector(
             onTap: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const payMode()));
+              Get.to(() => const PayMode(), //next page class
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.linear,
+                  transition: Transition.rightToLeft //transition effect
+                  );
             },
             child: Container(
               margin: const EdgeInsets.fromLTRB(16, 33, 16, 16),

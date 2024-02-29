@@ -3,8 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../models/sendOtpModel.dart';
 import '../networking/api_base_helper.dart';
-import '../networking/api_response.dart';
-import '../ui/phone_otp.dart';
 
 class SendOtpRepository {
   final ApiBaseHelper _helper = ApiBaseHelper();
@@ -21,7 +19,7 @@ class SendOtpRepository {
       final response = await _helper.post(ApiBaseHelper.sendOTP,
           jsonEncode(<String, String>{'contact': phoneNumber}), "");
 
-      print("ResponseData " + response.toString());
+      print("ResponseData $response");
       SendOTPModel model =
       SendOTPModel.fromJson(_helper.returnResponse(_context!, response));
       //Navigator.of(_keyLoader.currentContext!, rootNavigator: true).pop();
